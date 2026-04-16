@@ -41,8 +41,12 @@ const AccessNotification = ({
 
         <div className="flex flex-col items-center text-center gap-4">
           {/* icon */}
-          <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center">
-            <Shield className="w-7 h-7 text-accent-foreground" />
+          <div className="w-14 h-14 rounded-full  flex items-center justify-center">
+            <img
+    src="/logo.png"
+    alt="logo"
+    className="w-16 h-16 object-contain"
+  />
           </div>
 
           {/* title */}

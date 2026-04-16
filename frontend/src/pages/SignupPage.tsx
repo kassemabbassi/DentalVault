@@ -106,7 +106,7 @@ const SignupPage = () => {
 
       // optionnel: redirection après succès
       setTimeout(() => {
-        navigate("/login");
+        navigate("/patient-record");
       }, 1000);
     } catch (error: any) {
       setSuccess(false);

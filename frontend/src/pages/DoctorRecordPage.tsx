@@ -223,13 +223,8 @@ const DoctorRecordPage = () => {
       <header className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/patient-record")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <DentalLogo size="sm" />
+            
+            <DentalLogo  />
           </div>
           <Badge className="bg-success/10 text-success border-success/20 rounded-lg px-3 py-1.5">
             <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Mode accès médecin.
@@ -241,15 +236,15 @@ const DoctorRecordPage = () => {
         {/* Patient header */}
         <div className="card-dental flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl gradient-dental flex items-center justify-center">
-              <ToothIcon className="w-7 h-7" color="white" />
+            <div className="w-14 h-14 rounded-2xl  flex items-center justify-center">
+              <ToothIcon size="md" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">
                 {data.patient.firstName} {data.patient.lastName}
               </h1>
               <p className="text-sm text-muted-foreground">
-                CIN: {data.patient.cin} · DOB:{" "}
+                CIN: {data.patient.cin} · DDN:{" "}
                 {data.patient.dateOfBirth.split("T")[0]}
               </p>
             </div>

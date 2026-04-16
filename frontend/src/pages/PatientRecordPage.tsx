@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
-import { AttachmentsGrid } from "../components/Attachmentssection ";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import DentalLogo from "@/components/DentalLogo";
@@ -90,7 +89,11 @@ const PatientRecordPage = () => {
       socket.off("qrScanned"); // cleanup important
     };
   }, []);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const handlelogout=()=>{
+    localStorage.removeItem("token");
+    localStorage.removeItem("patient");
+    navigate("/login");
+  }
 
   const storedPatient = JSON.parse(localStorage.getItem("patient") || "{}");
   const patientId = storedPatient._id;
@@ -124,12 +127,19 @@ const PatientRecordPage = () => {
     link.click();
     document.body.removeChild(link);
   };
-  if (loading) return <Loader2 className="w-4 h-4" />;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
 
   if (error)
     return (
-      <div className="flex items-center gap-2 bg-destructive/10 text-destructive rounded-xl px-4 py-3 mt-4 text-sm">
-        <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="flex items-center gap-2 bg-destructive/10 text-destructive rounded-xl px-4 py-3 text-sm max-w-md w-full">
+          <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+        </div>
       </div>
     );
   return (
@@ -147,52 +157,66 @@ const PatientRecordPage = () => {
       )}
 
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <DentalLogo size="sm" />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl"
-              onClick={() => setShowNotification(true)}
-            >
-              <QrCode className="w-4 h-4 mr-1" /> Simuler un scan QR
-            </Button>
-          </div>
-        </div>
-      </header>
+      <header className="bg-card border-b border-border sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-card/95">
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Groupe gauche : retour + logo */}
+      <div className="flex items-center justify-between gap-3 sm:gap-4 w-full sm:w-auto">
+        <button
+          onClick={() => navigate("/")}
+          className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <DentalLogo  />
+      </div>
 
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:items-center sm:justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-xl w-full sm:w-auto"
+          onClick={() => setShowNotification(true)}
+        >
+          <QrCode className="w-4 h-4 mr-1" /> Simuler un scan QR
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="rounded-lg border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors w-full sm:w-auto"
+          onClick={() => handlelogout()}
+        >
+          Se déconnecter
+        </Button>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-4 sm:space-y-6">
         {/* Patient header */}
-        <div className="card-dental flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl gradient-dental flex items-center justify-center">
-              <ToothIcon className="w-7 h-7" color="white" />
+        <div className="card-dental flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5 p-4 sm:p-6 animate-fade-in">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl  flex items-center justify-center shrink-0">
+              <ToothIcon size="md" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">
+              <h1 className="text-lg sm:text-xl font-bold text-foreground break-words">
                 {data.patient.firstName} {data.patient.lastName}
               </h1>
-              <p className="text-sm text-muted-foreground">
-                CIN: {data.patient.cin} · DOB:{" "}
+              <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                CIN: {data.patient.cin} · DDN:{" "}
                 {data.patient.dateOfBirth.split("T")[0]}
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-xl w-full sm:w-auto"
               onClick={handleDownloadQR}
             >
               <Download className="w-4 h-4 mr-1" /> QR Code
@@ -202,17 +226,17 @@ const PatientRecordPage = () => {
 
         {/* Security banner */}
         <div
-          className="flex items-center gap-3 bg-accent rounded-2xl px-5 py-3 animate-fade-in"
+          className="flex items-start sm:items-center gap-3 bg-accent rounded-2xl px-4 sm:px-5 py-3 animate-fade-in"
           style={{ animationDelay: "0.1s" }}
         >
           <Shield className="w-5 h-5 text-accent-foreground shrink-0" />
-          <p className="text-sm text-accent-foreground font-medium">
+          <p className="text-sm text-accent-foreground font-medium leading-relaxed">
             Vos données sont sécurisées et contrôlées par vous. Seuls les
             dentistes approuvés peuvent consulter vos dossiers.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {/* Personal Info */}
           <Section
             title="Informations personnelles"
@@ -246,7 +270,7 @@ const PatientRecordPage = () => {
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Aucune allergie connue.
                   </p>
                 )}
@@ -269,7 +293,7 @@ const PatientRecordPage = () => {
                     </Badge>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground break-words">
                     Aucune maladie chronique.
                   </p>
                 )}
@@ -287,29 +311,29 @@ const PatientRecordPage = () => {
           <div className="space-y-0">
             {data?.medicalRecord?.treatments?.length ? (
               data.medicalRecord.treatments.map((c, i) => (
-                <div key={i} className="relative pl-8 pb-6 last:pb-0">
+                <div key={i} className="relative pl-7 sm:pl-8 pb-5 sm:pb-6 last:pb-0">
                   <div className="absolute left-[11px] top-2 w-0.5 h-full bg-border last:hidden" />
                   <div className="absolute left-1 top-2 w-[14px] h-[14px] rounded-full border-2 border-primary bg-card" />
 
-                  <div className="bg-muted/50 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-muted-foreground">
+                  <div className="bg-muted/50 rounded-xl p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+                      <span className="text-xs text-muted-foreground break-words">
                         {c?.date ? c.date.split("T")[0] : "Unknown date"}
                       </span>
 
-                      <span className="text-xs text-primary font-medium">
+                      <span className="text-xs text-primary font-medium break-words">
                         {c?.name ?? "Untitled"}
                       </span>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-1 break-words">
                       Traitements: {c?.description ?? "No description"}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground break-words">
                 Aucun traitements disponible.
               </p>
             )}
@@ -346,9 +370,9 @@ const Section = ({
 );
 
 const InfoRow = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex justify-between py-2 border-b border-border last:border-0">
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 py-3 border-b border-border last:border-0">
     <span className="text-sm text-muted-foreground">{label}</span>
-    <span className="text-sm font-medium text-foreground">{value}</span>
+    <span className="text-sm font-medium text-foreground break-all sm:text-right">{value}</span>
   </div>
 );
 
