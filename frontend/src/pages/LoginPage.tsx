@@ -23,7 +23,7 @@ const LoginPage = () => {
 
   const sendReq = async () => {
     if (!cin.trim() || !password.trim()) {
-      setError("Please fill in all fields");
+      setError("Tu dois remplir les champs CIN et mot de passe");
       return;
     }
 
@@ -58,8 +58,7 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await sendReq();
-    // Demo: navigate to patient record
-    navigate("/patient-record");
+   
   };
 
   return (
@@ -115,6 +114,7 @@ const LoginPage = () => {
               />
             </div>
           </div>
+          
 
           <Button type="submit" className="w-full py-6 rounded-xl text-base">
             Se connecter

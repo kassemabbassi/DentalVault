@@ -18,7 +18,7 @@ const login = async (req, res) => {
 
     if (!patient) {
       return res.status(404).json({
-        message: "User not found",
+        message: "Utilisateur non trouvé",
       });
     }
 
@@ -27,7 +27,7 @@ const login = async (req, res) => {
 
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "mot de passe incorrect",
       });
     }
 

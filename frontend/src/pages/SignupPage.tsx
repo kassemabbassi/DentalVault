@@ -98,16 +98,21 @@ const SignupPage = () => {
   const sendReq = async () => {
     try {
       const res = await api.post("/register", form);
+       // 🔐 1. récupérer token
+      const token = res.data.token;
+
+      // 💾 2. stocker dans localStorage
+      localStorage.setItem("token", token);
+
+      // (optionnel mais recommandé)
+      localStorage.setItem("patient", JSON.stringify(res.data.patient));
 
       setSuccess(true);
       setErrors({});
 
       console.log("User created:", res.data);
 
-      // optionnel: redirection après succès
-      setTimeout(() => {
-        navigate("/patient-record");
-      }, 1000);
+      
     } catch (error: any) {
       setSuccess(false);
 
