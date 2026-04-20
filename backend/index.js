@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db.js");
+const { connectSupabase } = require("./config/supabase.js"); 
 const morgan = require("morgan");
 
 const app = express();
@@ -15,34 +16,33 @@ const io = initSocket(server);
 app.use(
   cors({
     origin: "http://localhost:8080",
-    credentials: true, // ✅ AJOUT CRITIQUE
+    credentials: true,
   }),
 );
 app.use(express.json());
 app.use(morgan("dev"));
 
-// routes
+// Routes
 const registerRoute = require("./routes/register");
 const scanRoute = require("./routes/scan");
 const medicalRecordRoute = require("./routes/medicalRecord");
 const login = require("./routes/login");
+const uploadRoute = require("./routes/upload");
 
-// Use routes
 app.use("/register", registerRoute);
 app.use("/scan", scanRoute);
 app.use("/medicalRecord", medicalRecordRoute);
 app.use("/login", login);
+app.use("/upload", uploadRoute);
 
-// Test route
 app.get("/", (req, res) => {
   res.send("API Running...");
 });
 
-// Port
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  // DB connection
   connectDB();
+  connectSupabase(); // ✅ AJOUT
   console.log(`Server running on port ${PORT}`);
 });
