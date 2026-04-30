@@ -28,6 +28,9 @@ import DentalLogo from "@/components/DentalLogo";
 import ToothIcon from "@/components/ToothIcon";
 import { useParams } from "react-router-dom";
 import { api } from "@/lib/api";
+import UploadAttachment from "@/components/UploadAttachment";
+
+
 
 const patient = {
   name: "Ahmed Benali",
@@ -75,12 +78,24 @@ interface Treatments {
   name: string;
   description: string;
 }
+interface Attachment {
+  _id: string;
+  type: string;
+  fileName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  customName: string;  
+  storagePath: string;
+  uploadedAt: string;
+}
 interface MedicalRecord {
   _id: string;
   patientId: string;
   allergies: string[];
   chronicDiseases: string[];
   treatments: Treatments[];
+  attachments: Attachment[];
 }
 interface Consultation {
   date: string;
@@ -373,15 +388,31 @@ const DoctorRecordPage = () => {
 
         {/* Attachments */}
         <Section
-          title="Pièces jointes"
-          icon={<FileImage className="w-4 h-4" />}
-        >
-          <AttachmentsGrid
-            attachments={patient.attachments}
-            lightboxIndex={lightboxIndex}
-            setLightboxIndex={setLightboxIndex}
-          />
-        </Section>
+  title="Pièces jointes"
+  icon={<FileImage className="w-4 h-4" />}
+>
+  {/* Bouton upload — visible seulement si dossier médical existe */}
+  {data?.medicalRecord && (
+    <div className="mb-4">
+      <UploadAttachment
+  medicalRecordId={data.medicalRecord._id}
+  patientId={data.patient._id}
+  onSuccess={fetchRecord}
+/>
+    </div>
+  )}
+
+  <AttachmentsGrid
+attachments={(data?.medicalRecord?.attachments ?? []).map((a) => ({
+  ...a,
+  name: a.customName,   // ✅ nom écrit par le médecin
+  date: a.uploadedAt?.split("T")[0] ?? "",
+  size: `${(a.size / 1024).toFixed(0)} KB`,
+}))}
+    lightboxIndex={lightboxIndex}
+    setLightboxIndex={setLightboxIndex}
+  />
+</Section>
       </main>
 
       {/* Add Consultation or Create Medical Record Modal */}

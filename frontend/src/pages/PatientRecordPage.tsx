@@ -20,14 +20,9 @@ import AccessNotification from "@/components/AccessNotification";
 import { api } from "@/lib/api";
 import socket from "../lib/socket";
 import { toast } from "sonner";
+import { AttachmentsGrid } from "@/components/Attachmentssection ";
 
-const patient = {
-  attachments: [
-    { type: "xray", name: "Panoramic X-Ray", date: "2025-12-10" },
-    { type: "image", name: "Intraoral Photo", date: "2025-09-22" },
-    { type: "audio", name: "Voice Note – Dr. Alaoui", date: "2025-09-22" },
-  ],
-};
+
 interface Patient {
   _id: string;
   firstName: string;
@@ -44,11 +39,23 @@ interface Treatments {
   name: string;
   description: string;
 }
+interface Attachment {
+  _id: string;
+  type: string;
+  fileName: string;
+  customName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  storagePath: string;
+  uploadedAt: string;
+}
 interface MedicalRecord {
   patientId: string;
   allergies: string[];
   chronicDiseases: string[];
   treatments: Treatments[];
+  attachments: Attachment[];
 }
 interface Consultation {
   date: string;
@@ -94,7 +101,7 @@ const PatientRecordPage = () => {
     localStorage.removeItem("patient");
     navigate("/login");
   }
-
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const storedPatient = JSON.parse(localStorage.getItem("patient") || "{}");
   const patientId = storedPatient._id;
   const [data, setData] = useState<PatientRecord>(null);
@@ -339,6 +346,29 @@ const PatientRecordPage = () => {
             )}
           </div>
         </Section>
+        {/* Pièces jointes */}
+<Section
+  title="Pièces jointes"
+  icon={<FileImage className="w-4 h-4" />}
+  delay="0.35s"
+>
+  {data?.medicalRecord?.attachments?.length ? (
+    <AttachmentsGrid
+      attachments={(data.medicalRecord.attachments).map((a) => ({
+        ...a,
+        name: a.customName,
+        date: a.uploadedAt?.split("T")[0] ?? "",
+        size: `${(a.size / 1024).toFixed(0)} KB`,
+      }))}
+      lightboxIndex={lightboxIndex}
+      setLightboxIndex={setLightboxIndex}
+    />
+  ) : (
+    <p className="text-xs sm:text-sm text-muted-foreground">
+      Aucune pièce jointe disponible.
+    </p>
+  )}
+</Section>
 
        
       </main>

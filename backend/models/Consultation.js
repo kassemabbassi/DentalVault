@@ -17,21 +17,6 @@ const consultationSchema = new mongoose.Schema({
     },
   ],
 
-  // 🧠 préparé pour fichiers (étape suivante)
-  attachments: [
-    {
-      type: {
-        type: String,
-        enum: ["image", "xray", "audio"],
-      },
-      url: String,
-      uploadedAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
-
   createdAt: {
     type: Date,
     default: Date.now,

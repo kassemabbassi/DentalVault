@@ -1,53 +1,10 @@
-/**
- * INSTRUCTIONS D'INTÉGRATION dans PatientRecordPage.tsx
- * ─────────────────────────────────────────────────────
- * 1. Ajoute cet import en haut :
- *      import { AttachmentsGrid } from "@/components/AttachmentsSection";
- *
- * 2. Ajoute ce state dans PatientRecordPage :
- *      const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
- *
- * 3. Remplace la Section "Pièces jointes" par :
- *
- *    <Section
- *      title="Pièces jointes"
- *      icon={<FileImage className="w-4 h-4" />}
- *      delay="0.35s"
- *    >
- *      <AttachmentsGrid
- *        attachments={patient.attachments}
- *        lightboxIndex={lightboxIndex}
- *        setLightboxIndex={setLightboxIndex}
- *      />
- *    </Section>
- *
- * 4. Les URLs d'images réelles Unsplash sont mappées par type dans REAL_IMAGES ci-dessous.
- *    Tu peux les remplacer par les vraies URLs de ton backend (champ `url` dans attachment).
- */
-
 import { ZoomIn, X, ChevronLeft, ChevronRight, Scan, FileText, Mic, FileImage } from "lucide-react";
-
-// ── Images réelles Unsplash (libres de droits) ──
-// Photo 1 : panoramique dentaire  → unsplash.com/photos/1_M947YWypw  (Umanoide)
-// Photo 2 : radiographie dents    → unsplash.com/photos/KeVKEs1_RDU  (Umanoide)
-const REAL_IMAGES: Record<string, string> = {
-  xray:   "/image1.jpg",
-  xray2:  "/image2.jpg",
-  image:  "/image2.jpg",
-};
-// Correspondance type → image de fond pour thumbnail
-const THUMB_BY_TYPE: Record<string, string> = {
-  xray:   "/image1.jpg",
-  image:  "/image2.jpg",
-  audio:  "",
-  report: "",
-};
 
 type AttachmentItem = {
   type: string;
   name: string;
   date: string;
-  url?: string;    // si ton backend envoie une vraie URL, elle sera utilisée en priorité
+  url?: string;
   size?: string;
 };
 
@@ -77,15 +34,14 @@ const TYPE_META: Record<string, {
 };
 const getMeta = (t: string) => TYPE_META[t] ?? TYPE_META["image"];
 
-// ── Thumbnail card ──
 function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
-  const imgUrl = attachment.url ?? THUMB_BY_TYPE[attachment.type] ?? "";
+  const imgUrl = attachment.url ?? "";
   const meta = getMeta(attachment.type);
 
   if (attachment.type === "audio") {
     return (
       <div style={{
-        width: "100%", height: 130, borderRadius: 10,
+        width: "100%", height: 180, borderRadius: 10,
         background: "rgba(124,58,237,0.06)",
         border: "1px solid rgba(124,58,237,0.15)",
         display: "flex", flexDirection: "column",
@@ -100,7 +56,6 @@ function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
         }}>
           <Mic style={{ width: 18, height: 18 }} />
         </div>
-        {/* Waveform statique */}
         <div style={{ display: "flex", alignItems: "center", gap: 2, height: 28 }}>
           {[5,9,14,8,18,11,7,15,9,6,13,7,11,17,9,7,13,5,9,11].map((h, i) => (
             <div key={i} style={{
@@ -116,7 +71,7 @@ function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
   if (imgUrl) {
     return (
       <div style={{
-        width: "100%", height: 130, borderRadius: 10,
+        width: "100%", height: 180, borderRadius: 10,
         overflow: "hidden", position: "relative",
       }}>
         <img
@@ -125,7 +80,6 @@ function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           loading="lazy"
         />
-        {/* overlay léger pour lisibilité badge */}
         <div style={{
           position: "absolute", inset: 0,
           background: "linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 50%)",
@@ -134,10 +88,9 @@ function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
     );
   }
 
-  // fallback icon
   return (
     <div style={{
-      width: "100%", height: 130, borderRadius: 10,
+      width: "100%", height: 180, borderRadius: 10,
       background: meta.bg, border: `1px solid ${meta.border}`,
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
@@ -148,9 +101,8 @@ function Thumbnail({ attachment }: { attachment: AttachmentItem }) {
   );
 }
 
-// ── Vue lightbox ──
 function LightboxContent({ attachment }: { attachment: AttachmentItem }) {
-  const imgUrl = attachment.url ?? REAL_IMAGES[attachment.type] ?? "";
+  const imgUrl = attachment.url ?? "";
   const meta = getMeta(attachment.type);
 
   if (attachment.type === "audio") {
@@ -180,9 +132,6 @@ function LightboxContent({ attachment }: { attachment: AttachmentItem }) {
             }} />
           ))}
         </div>
-        <p style={{ color: "#7c3aed", fontSize: 12, fontFamily: "monospace", letterSpacing: 1, opacity: 0.65, margin: 0 }}>
-          VOICE NOTE · DR. ALAOUI
-        </p>
       </div>
     );
   }
@@ -193,11 +142,8 @@ function LightboxContent({ attachment }: { attachment: AttachmentItem }) {
         src={imgUrl}
         alt={attachment.name}
         style={{
-          width: "100%",
-          maxHeight: "62vh",
-          objectFit: "contain",
-          borderRadius: 12,
-          display: "block",
+          width: "100%", maxHeight: "62vh",
+          objectFit: "contain", borderRadius: 12, display: "block",
         }}
       />
     );
@@ -213,7 +159,6 @@ function LightboxContent({ attachment }: { attachment: AttachmentItem }) {
   );
 }
 
-// ── Composant principal exporté ──
 export function AttachmentsGrid({
   attachments,
   lightboxIndex,
@@ -280,22 +225,20 @@ export function AttachmentsGrid({
         .lb-arrow:hover { background: rgba(24,95,165,0.65); }
       `}</style>
 
-      {/* ── GRILLE ── */}
+      {/* GRILLE */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))",
+        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
         gap: 12,
       }}>
         {attachments.map((a, i) => {
           const meta = getMeta(a.type);
           return (
             <div key={i} className="att-card" onClick={() => setLightboxIndex(i)}>
-              {/* Image / preview */}
               <div style={{ padding: "10px 10px 0" }}>
                 <Thumbnail attachment={a} />
               </div>
 
-              {/* Hover overlay */}
               <div className="att-zoom-hint">
                 <div style={{
                   background: "rgba(4,12,30,0.82)",
@@ -309,34 +252,34 @@ export function AttachmentsGrid({
               </div>
 
               {/* Footer */}
-              <div style={{ padding: "8px 10px 10px", display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ padding: "8px 10px 10px" }}>
                 <div style={{
-                  display: "flex", alignItems: "center", gap: 4,
+                  display: "inline-flex", alignItems: "center", gap: 4,
                   background: meta.bg, border: `1px solid ${meta.border}`,
                   borderRadius: 7, padding: "2px 8px",
                   color: meta.color, fontSize: 10, fontWeight: 600,
-                  letterSpacing: "0.3px", flexShrink: 0,
+                  letterSpacing: "0.3px", marginBottom: 6,
                 }}>
                   <span style={{ display: "flex", width: 12, height: 12 }}>{meta.icon}</span>
                   {meta.label}
                 </div>
-                <div style={{ minWidth: 0 }}>
-                  <p style={{
-                    margin: 0, fontSize: 11, fontWeight: 600,
-                    color: "var(--color-text-primary)",
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  }}>{a.name}</p>
-                  <p style={{ margin: 0, fontSize: 10, color: "var(--color-text-secondary)" }}>
-                    {a.date}{a.size ? ` · ${a.size}` : ""}
-                  </p>
-                </div>
+                <p style={{
+                  margin: 0, fontSize: 12, fontWeight: 600,
+                  color: "var(--color-text-primary)",
+                  wordBreak: "break-word",
+                  whiteSpace: "normal",
+                  lineHeight: "1.4",
+                }}>{a.name}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "var(--color-text-secondary)" }}>
+                  {a.date}{a.size ? ` · ${a.size}` : ""}
+                </p>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* ── LIGHTBOX ── */}
+      {/* LIGHTBOX */}
       {lightboxIndex !== null && (() => {
         const a = attachments[lightboxIndex];
         const meta = getMeta(a.type);
@@ -344,8 +287,6 @@ export function AttachmentsGrid({
           <>
             <div className="lb-backdrop" onClick={() => setLightboxIndex(null)}>
               <div className="lb-panel" onClick={e => e.stopPropagation()}>
-
-                {/* Header */}
                 <div style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "14px 18px",
@@ -374,12 +315,10 @@ export function AttachmentsGrid({
                   </button>
                 </div>
 
-                {/* Contenu */}
                 <div style={{ padding: "18px 20px" }}>
                   <LightboxContent attachment={a} />
                 </div>
 
-                {/* Dots de navigation */}
                 <div style={{
                   padding: "10px 18px 16px",
                   borderTop: "1px solid rgba(55,138,221,0.08)",
@@ -396,7 +335,6 @@ export function AttachmentsGrid({
               </div>
             </div>
 
-            {/* Flèches de navigation */}
             {total > 1 && (
               <>
                 <button className="lb-arrow" style={{ left: "calc(50% - 395px)" }}
