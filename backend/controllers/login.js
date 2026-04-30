@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const Patient = require("../models/Patient");
+const { decrypt } = require("../utils/encryption");
 
 const login = async (req, res) => {
   try {
@@ -51,7 +52,14 @@ const login = async (req, res) => {
     return res.status(200).json({
       message: "Login successful",
       token,
-      patient,
+      patient: {
+        ...patient.toObject(),
+        firstName: decrypt(patient.firstName),
+        lastName: decrypt(patient.lastName),
+        email: decrypt(patient.email),
+        phoneNumber: decrypt(patient.phoneNumber),
+        dateOfBirth: decrypt(patient.dateOfBirth),
+      },
     });
   } catch (error) {
     console.error("Login error:", error);

@@ -2,6 +2,7 @@ const { generateToken, generateQR } = require("../services/qr");
 const Patient = require("../models/Patient");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { encrypt } = require("../utils/encryption");
 const register = async (req, res) => {
   console.log("Received registration data:", req.body);
   const {
@@ -24,16 +25,23 @@ const register = async (req, res) => {
     //hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    // Save patient to DB
 
+    // Apply FLE1 - Encrypt sensitive fields
+    const encryptedFirstName = encrypt(firstName);
+    const encryptedLastName = encrypt(lastName);
+    const encryptedEmail = encrypt(email);
+    const encryptedPhoneNumber = encrypt(phoneNumber);
+    const encryptedDateOfBirth = encrypt(dateOfBirth);
+
+    // Save patient to DB
     const newPatient = new Patient({
-      firstName,
-      lastName,
+      firstName: encryptedFirstName,
+      lastName: encryptedLastName,
       cin,
-      email,
-      phoneNumber,
+      email: encryptedEmail,
+      phoneNumber: encryptedPhoneNumber,
       hashedPassword,
-      dateOfBirth,
+      dateOfBirth: encryptedDateOfBirth,
       qrToken,
     });
     await newPatient.save();

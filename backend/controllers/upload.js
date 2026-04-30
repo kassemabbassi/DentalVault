@@ -1,6 +1,7 @@
 const multer = require("multer");
 const { supabase } = require("../config/supabase");
 const MedicalRecord = require("../models/MedicalRecord");
+const { encrypt, decrypt } = require("../utils/encryption");
 
 const storage = multer.memoryStorage();
 
@@ -19,7 +20,7 @@ const upload = multer({
 
 const uploadAttachment = async (req, res) => {
   try {
-    const { medicalRecordId, patientId, customName } = req.body;  
+    const { medicalRecordId, patientId, customName } = req.body;
     const file = req.file;
 
     if (!file || !medicalRecordId || !patientId || !customName) {
@@ -59,15 +60,29 @@ const uploadAttachment = async (req, res) => {
     const newAttachment = {
       type: attachmentType,
       fileName: file.originalname,
-      customName,                    
+      customName,
       mimeType: file.mimetype,
       size: file.size,
       url: urlData.publicUrl,
       storagePath,
     };
 
-    // 7. Sauvegarder dans MedicalRecord directement
-    medicalRecord.attachments.push(newAttachment);
+    // 7. Apply FLE1 - Récupérer et déchiffrer les attachments existants
+    let attachments = [];
+    if (medicalRecord.attachments) {
+      try {
+        attachments = JSON.parse(decrypt(medicalRecord.attachments));
+      } catch (e) {
+        // Si pas de attachments chiffrés, utiliser array vide
+        attachments = [];
+      }
+    }
+
+    // 8. Ajouter le nouvel attachment
+    attachments.push(newAttachment);
+
+    // 9. Chiffrer l'array complet des attachments
+    medicalRecord.attachments = encrypt(JSON.stringify(attachments));
     medicalRecord.updatedAt = Date.now();
     await medicalRecord.save();
 
