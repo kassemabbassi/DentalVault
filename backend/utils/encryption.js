@@ -1,6 +1,16 @@
 const crypto = require("crypto");
 
 const ALGORITHM = "aes-256-gcm";
+if (!process.env.ENCRYPTION_KEY) {
+  console.error("❌ ENCRYPTION_KEY manquante dans .env");
+  process.exit(1);
+}
+
+if (process.env.ENCRYPTION_KEY.length !== 64) {
+  console.error(`❌ ENCRYPTION_KEY invalide — doit faire 64 caractères hex, actuellement ${process.env.ENCRYPTION_KEY.length}`);
+  process.exit(1);
+}
+
 const KEY = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
 
 const encrypt = (text) => {
@@ -24,18 +34,32 @@ const encrypt = (text) => {
 const decrypt = (text) => {
   if (!text) return text;
 
-  const [ivHex, authTagHex, encrypted] = text.split(":");
+  try {
+    const parts = text.split(":");
 
-  const iv = Buffer.from(ivHex, "hex");
-  const authTag = Buffer.from(authTagHex, "hex");
+    // Vérifie que le format iv:authTag:données est respecté
+    if (parts.length !== 3) {
+      console.warn("⚠️ Valeur non chiffrée ou format invalide — retournée telle quelle");
+      return text;
+    }
 
-  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
-  decipher.setAuthTag(authTag);
+    const [ivHex, authTagHex, encrypted] = parts;
 
-  let decrypted = decipher.update(encrypted, "hex", "utf8");
-  decrypted += decipher.final("utf8");
+    const iv = Buffer.from(ivHex, "hex");
+    const authTag = Buffer.from(authTagHex, "hex");
 
-  return decrypted;
+    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+    decipher.setAuthTag(authTag);
+
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
+    return decrypted;
+
+  } catch (error) {
+    console.error("❌ Erreur déchiffrement :", error.message);
+    return null;
+  }
 };
 
 
@@ -55,20 +79,19 @@ const decryptMedicalRecord = (medicalRecord) => {
   const m = medicalRecord.toObject ? medicalRecord.toObject() : { ...medicalRecord };
   return {
     ...m,
-    allergies: m.allergies.map((a) => decrypt(a)),
-    chronicDiseases: m.chronicDiseases.map((d) => decrypt(d)),
-    treatments: m.treatments.map((t) => ({
+    allergies: (m.allergies ?? []).map((a) => decrypt(a)),
+    chronicDiseases: (m.chronicDiseases ?? []).map((d) => decrypt(d)),
+    treatments: (m.treatments ?? []).map((t) => ({
       ...t,
       name: decrypt(t.name),
       description: decrypt(t.description),
     })),
-    attachments: m.attachments.map((a) => ({  // ✅ ajout
+    attachments: (m.attachments ?? []).map((a) => ({
       ...a,
       fileName: decrypt(a.fileName),
       customName: decrypt(a.customName),
     })),
   };
 };
-
 // Ajouter dans utils/encryption.js
 module.exports = { encrypt, decrypt, decryptPatient, decryptMedicalRecord };

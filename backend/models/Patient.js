@@ -21,6 +21,7 @@ const patientSchema = new mongoose.Schema({
   email: {
     type: String,
     unique: true,
+    sparse: true,  // ✅ permet plusieurs documents sans email
   },
   hashedPassword: {
     type: String,
