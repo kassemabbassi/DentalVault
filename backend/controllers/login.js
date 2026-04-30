@@ -1,20 +1,21 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const Patient = require("../models/Patient");
+const { encrypt, decrypt } = require("../utils/encryption");
 
 const login = async (req, res) => {
   try {
     const { cin, password } = req.body;
 
-    // 🔹 1. Validation input
     if (!cin || !password) {
       return res.status(400).json({
         message: "CIN and password are required",
       });
     }
 
-    // 🔹 2. Chercher user par CIN
-    const patient = await Patient.findOne({ cin });
+    // Chiffrer le cin reçu pour chercher dans MongoDB
+    const encryptedCin = encrypt(cin);
+    const patient = await Patient.findOne({ cin: encryptedCin });
 
     if (!patient) {
       return res.status(404).json({
@@ -22,46 +23,44 @@ const login = async (req, res) => {
       });
     }
 
-    // 🔹 3. Vérifier password (bcrypt)
     const isMatch = await bcrypt.compare(password, patient.hashedPassword);
-
     if (!isMatch) {
       return res.status(401).json({
         message: "mot de passe incorrect",
       });
     }
 
-    // 🔹 4. Payload JWT (ce que tu veux encoder)
     const payload = {
       userId: patient._id,
       cin: patient.cin,
-      // tu peux ajouter role plus tard
     };
 
-    // 🔹 5. Génération token
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || "SUPER_SECRET_KEY", // ⚠️ .env recommandé
-      {
-        expiresIn: "60d", // hackathon → long
-      },
+      process.env.JWT_SECRET || "SUPER_SECRET_KEY",
+      { expiresIn: "60d" }
     );
 
-    // 🔹 6. Réponse
+    // Déchiffrer les champs sensibles avant d'envoyer au frontend
+    const decryptedPatient = {
+      ...patient.toObject(),
+      cin: decrypt(patient.cin),
+      email: decrypt(patient.email),
+      phoneNumber: decrypt(patient.phoneNumber),
+    };
+
     return res.status(200).json({
       message: "Login successful",
       token,
-      patient,
+      patient: decryptedPatient,
     });
+
   } catch (error) {
     console.error("Login error:", error);
-
     return res.status(500).json({
       message: "Internal server error",
     });
   }
 };
 
-module.exports = {
-  login,
-};
+module.exports = { login };
