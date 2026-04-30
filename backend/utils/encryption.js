@@ -24,47 +24,51 @@ const encrypt = (text) => {
 const decrypt = (text) => {
   if (!text) return text;
 
-  // Vérifier si les données sont au format chiffré (IV:AuthTag:Encrypted)
-  if (typeof text !== 'string' || !text.includes(':')) {
-    // Données non chiffrées - retourner telles quelles
-    return text;
-  }
+  const [ivHex, authTagHex, encrypted] = text.split(":");
 
-  try {
-    const [ivHex, authTagHex, encrypted] = text.split(":");
+  const iv = Buffer.from(ivHex, "hex");
+  const authTag = Buffer.from(authTagHex, "hex");
 
-    // Vérifier que tous les composants existent
-    if (!ivHex || !authTagHex || !encrypted) {
-      return text; // Format incorrect - retourner tel quel
-    }
+  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
+  decipher.setAuthTag(authTag);
 
-    const iv = Buffer.from(ivHex, "hex");
-    const authTag = Buffer.from(authTagHex, "hex");
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
 
-    const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv);
-    decipher.setAuthTag(authTag);
-
-    let decrypted = decipher.update(encrypted, "hex", "utf8");
-    decrypted += decipher.final("utf8");
-
-    return decrypted;
-  } catch (e) {
-    // En cas d'erreur de déchiffrement, retourner les données originales
-    return text;
-  }
+  return decrypted;
 };
 
-// Helper function to safely decrypt and parse JSON
-const decryptAndParse = (text, defaultValue = []) => {
-  try {
-    if (!text) return defaultValue;
-    const decrypted = decrypt(text);
-    if (!decrypted) return defaultValue;
-    return JSON.parse(decrypted);
-  } catch (e) {
-    // En cas d'erreur, retourner la valeur par défaut
-    return defaultValue;
-  }
+
+// ── Helpers déchiffrement ──
+
+const decryptPatient = (patient) => {
+  const p = patient.toObject ? patient.toObject() : { ...patient };
+  return {
+    ...p,
+    cin: decrypt(p.cin),
+    email: decrypt(p.email),
+    phoneNumber: decrypt(p.phoneNumber),
+  };
 };
 
-module.exports = { encrypt, decrypt, decryptAndParse };
+const decryptMedicalRecord = (medicalRecord) => {
+  const m = medicalRecord.toObject ? medicalRecord.toObject() : { ...medicalRecord };
+  return {
+    ...m,
+    allergies: m.allergies.map((a) => decrypt(a)),
+    chronicDiseases: m.chronicDiseases.map((d) => decrypt(d)),
+    treatments: m.treatments.map((t) => ({
+      ...t,
+      name: decrypt(t.name),
+      description: decrypt(t.description),
+    })),
+    attachments: m.attachments.map((a) => ({  // ✅ ajout
+      ...a,
+      fileName: decrypt(a.fileName),
+      customName: decrypt(a.customName),
+    })),
+  };
+};
+
+// Ajouter dans utils/encryption.js
+module.exports = { encrypt, decrypt, decryptPatient, decryptMedicalRecord };
