@@ -200,16 +200,4 @@ Le point d’entrée actuel est `index.js`. Lancez-le avec `node index.js`. Les 
 - **Erreur de déchiffrement :** vérifiez que `ENCRYPTION_KEY` est exactement la même que celle utilisée lors du chiffrement des données. Une perte ou une modification de cette clé peut rendre les données chiffrées illisibles.
 - **`npm start` ne trouve pas `server.js` :** lancez `node index.js` ou corrigez les scripts du `backend/package.json`.
 
-## Contribuer
 
-Les contributions sont les bienvenues. Pour proposer une amélioration :
-
-1. Ouvrez une issue pour décrire le problème ou la fonctionnalité souhaitée.
-2. Créez une branche dédiée à votre changement.
-3. Ajoutez ou mettez à jour les tests si nécessaire.
-4. Vérifiez le lint et le build du frontend avant d’ouvrir une pull request.
-5. Ne joignez jamais de clés, de fichiers `.env` ou de données médicales réelles.
-
-## Licence
-
-Aucune licence n’est actuellement déclarée à la racine du dépôt. Tant qu’une licence n’est pas ajoutée, les conditions de réutilisation et de redistribution ne sont pas explicitement définies. Ajoutez un fichier `LICENSE` pour préciser les droits accordés.
